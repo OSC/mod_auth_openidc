@@ -1335,6 +1335,7 @@ void *oidc_create_server_config(apr_pool_t *pool, server_rec *svr) {
 	c->info_hook_data = NULL;
 	c->black_listed_claims = NULL;
 	c->white_listed_claims = NULL;
+	c->extensions = NULL;
 
 	c->provider.issuer_specific_redirect_uri =
 			OIDC_DEFAULT_PROVIDER_ISSUER_SPECIFIC_REDIRECT_URI;
@@ -1818,6 +1819,9 @@ void *oidc_merge_server_config(apr_pool_t *pool, void *BASE, void *ADD) {
 			add->redirect_urls_allowed != NULL ?
 					add->redirect_urls_allowed : base->redirect_urls_allowed;
 
+	c->extensions =
+			add->extensions != NULL ?
+					add->extensions : base->extensions;
 	return c;
 }
 
@@ -3197,6 +3201,11 @@ const command_rec oidc_config_cmds[] = {
 				(void*)APR_OFFSETOF(oidc_cfg, provider.auth_request_method),
 				RSRC_CONF,
 				"HTTP method used to send the authentication request to the provider (GET or POST)."),
+		AP_INIT_TAKE1("OIDCTokenExtensions",
+				oidc_set_string_slot,
+				(void*)APR_OFFSETOF(oidc_cfg, extensions),
+				RSRC_CONF,
+				"List of extension elements to parse out of the token response."),
 		AP_INIT_ITERATE(OIDCInfoHook,
 				oidc_set_info_hook_data,
 				(void *)APR_OFFSETOF(oidc_cfg, info_hook_data),
